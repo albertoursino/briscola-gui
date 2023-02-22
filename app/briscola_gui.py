@@ -1,5 +1,4 @@
 import os
-from functools import partial
 from tkinter import *
 from tkinter import ttk
 
@@ -19,6 +18,7 @@ class BriscolaGui:
 
     def __init__(self):
         self.root = Tk()
+        self.root.minsize(900, 700)
         content_padding = (50, 50, 50, 50)  # w-n-e-s
         self.content = ttk.Frame(self.root, padding=content_padding)
         self.content.grid(column=0, row=0, sticky="NSEW")
@@ -29,18 +29,16 @@ class BriscolaGui:
         self.content.rowconfigure(0, weight=1)
         self.content.rowconfigure(1, weight=1)
         self.content.rowconfigure(2, weight=1)
-        # load all images
+        # loading and resizing all images
         image_size = (98, 162)
         for filename in os.listdir("../card_images"):
             img_path = os.path.join("../card_images", filename)
             img = Image.open(img_path).resize(image_size, resample=Resampling.LANCZOS)
             self.card_images[filename] = (ImageTk.PhotoImage(image=img))
 
-    # TODO: this method should be called wrt the algorithm of the Briscola game
     def player_play_card(self, card_btn, card_name):
         """
         This function moves the chosen card from the "player_frame" to the "table_frame".
-        Cards in the player hand are indexed from left (1) to right (3).
         :param card_btn: button of the card to be removed form the player hand
         :param card_name: image filename of the played card
         :return image filename of the played card
@@ -52,7 +50,6 @@ class BriscolaGui:
         card_btn.destroy()
         return card_name
 
-    # TODO: this method should be called wrt the algorithm of the Briscola game
     def agent_play_card(self, card_name):
         """
         This function moves a card from the "agent_frame" to the "table_frame".
@@ -61,29 +58,46 @@ class BriscolaGui:
         # remove a "retro card" from the agent frame
         self.agent_frame.winfo_children()[0].destroy()
         # showing the played card inside the table frame
-        card = ttk.Button(self.table_frame.winfo_children()[0], image=self.card_images[card_name])
+        card = ttk.Label(self.table_frame.winfo_children()[0], image=self.card_images[card_name])
         card.grid(column=0, row=0)
 
-    def populate_agent_frame(self):
+    def empty_deck(self):
         """
-        Insert 3 retro card images into the frame "agent_frame".
+        This function loads the image "Deck_Finito.jpg" into the frame "deck_frame".
         """
-        card_1 = ttk.Label(self.agent_frame)
-        card_2 = ttk.Label(self.agent_frame)
-        card_3 = ttk.Label(self.agent_frame)
+        self.deck_frame.winfo_children()[1].destroy()
+        empty_deck_label = ttk.Label(self.deck_frame, image=self.card_images["Deck_Finito.jpg"])
+        empty_deck_label.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
 
-        card_1['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
-        card_2['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
-        card_3['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
+    def empty_briscola(self):
+        """
+        This function removes the image of the Briscola from the frame "deck_frame".
+        """
+        self.deck_frame.winfo_children()[0].destroy()
 
-        card_1.grid(column=0, row=0, sticky="NS", padx=5, pady=5)
-        card_2.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
-        card_3.grid(column=2, row=0, sticky="NS", padx=5, pady=5)
+    def agent_draw_card(self):
+        """
+        This function adds a card to the agent hand.
+        """
+        agent_frame_children = self.agent_frame.winfo_children()
+        card = ttk.Label(self.agent_frame, image=self.card_images["Carte_Napoletane_retro.jpg"])
 
-    # TODO: this method should be called wrt the algorithm of the Briscola game
+        card.grid(column=len(agent_frame_children), row=0, sticky="NS", padx=5, pady=5)
+
+    def player_draw_card(self, card_name):
+        """
+        This function adds a card to the player hand.
+        :param card_name: image filename of the card to be added
+        """
+        player_frame_children = self.player_frame.winfo_children()
+        card = ttk.Button(self.player_frame, image=self.card_images[card_name],
+                          command=lambda: self.player_play_card(card, card_name))
+        # adding the card at the right most place in the player hand
+        card.grid(column=len(player_frame_children), row=0, sticky="NS", padx=5, pady=5)
+
     def populate_player_frame(self, cards_name):
         """
-        Insert 3 cards into the frame "player_frame".
+        Inserts 3 cards into the frame "player_frame".
         :param cards_name: array containing 3 image filenames
         """
         card_1 = ttk.Button(self.player_frame, command=lambda: self.player_play_card(card_1, cards_name[0]))
@@ -98,10 +112,9 @@ class BriscolaGui:
         card_2.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
         card_3.grid(column=2, row=0, sticky="NS", padx=5, pady=5)
 
-    # TODO: this method should be called wrt the algorithm of the Briscola game
     def populate_deck_frame(self, briscola_name):
         """
-        Insert images of the deck and of the briscola card into the frame "deck_frame".
+        Inserts images of the deck and of the briscola card into the frame "deck_frame".
         :param briscola_name: image filename of the briscola
         """
         briscola_label = ttk.Label(self.deck_frame)
@@ -113,29 +126,36 @@ class BriscolaGui:
         briscola_label.grid(column=0, row=0, sticky="NS", padx=5, pady=5)
         deck_label.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
 
-    def populate_table_frame(self):
-        """
-        Insert 2 frames into the frame "table_frame".
-        """
-        agent_card_frame = ttk.Frame(self.table_frame)
-        player_card_frame = ttk.Frame(self.table_frame)
-
-        agent_card_frame.grid(column=0, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
-        player_card_frame.grid(column=1, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
-
     def create_main_frames(self):
         """
         Creates the 4 main frames.
         """
-        self.agent_frame = ttk.Frame(self.content)
-        self.player_frame = ttk.Frame(self.content)
-        self.table_frame = ttk.Frame(self.content)
-        self.deck_frame = ttk.Frame(self.content)
+        self.agent_frame = ttk.Frame(self.content, width=350, height=200)
+        self.player_frame = ttk.Frame(self.content, width=350, height=200)
+        self.table_frame = ttk.Frame(self.content, width=350, height=200)
+        self.deck_frame = ttk.Frame(self.content, width=200, height=200)
 
         self.player_frame.grid(column=0, row=2, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
         self.agent_frame.grid(column=0, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
-        self.table_frame.grid(column=0, row=1, sticky="NS", padx=self.frame_padding, pady=self.frame_padding + 10)
+        self.table_frame.grid(column=0, row=1, sticky="NS", padx=self.frame_padding + 10, pady=self.frame_padding)
         self.deck_frame.grid(column=1, row=1, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
+
+        # --- inserting nested frames ---
+        # here we are inside the frame "table_frame"
+        agent_card_frame = ttk.Frame(self.table_frame)
+        player_card_frame = ttk.Frame(self.table_frame)
+        agent_card_frame.grid(column=0, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
+        player_card_frame.grid(column=1, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
+        # here we are inside the frame "agent_frame"
+        card_1 = ttk.Label(self.agent_frame)
+        card_2 = ttk.Label(self.agent_frame)
+        card_3 = ttk.Label(self.agent_frame)
+        card_1['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
+        card_2['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
+        card_3['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
+        card_1.grid(column=0, row=0, sticky="NS", padx=5, pady=5)
+        card_2.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
+        card_3.grid(column=2, row=0, sticky="NS", padx=5, pady=5)
 
         # resizing frames with resolution changes
         self.deck_frame.columnconfigure(0, weight=1)
@@ -150,21 +170,24 @@ class BriscolaGui:
         self.agent_frame.columnconfigure(2, weight=1)
         self.agent_frame.rowconfigure(0, weight=1)
 
-    def start_gui(self):
+    def start_gui(self, briscola_name, initial_player_cards):
         """
-        This method populate the content and starts the gui for the Briscola game
+        This method populates the content with initial values and starts the gui for the Briscola game.
+        :param briscola_name: image filename of the briscola
+        :param initial_player_cards: array containing 3 image filenames of the 3 initial player cards
         """
         self.create_main_frames()
 
-        # TODO: these methods should be called wrt the algorithm of the Briscola game
-        self.populate_player_frame(["17_Sette_di_coppe.jpg", "17_Sette_di_coppe.jpg", "17_Sette_di_coppe.jpg"])
-        self.populate_deck_frame("37_Sette_di_bastoni.jpg")
-        self.populate_agent_frame()
-        self.populate_table_frame()
+        # TODO: the algorithm tells us the briscola card
+        self.populate_deck_frame(briscola_name)
+
+        # TODO: the algorithm tells us the three initial cards of the player
+        self.populate_player_frame(initial_player_cards)
 
         self.root.mainloop()
 
 
 if __name__ == '__main__':
     briscola_gui = BriscolaGui()
-    briscola_gui.start_gui()
+    briscola_gui.start_gui("37_Sette_di_bastoni.jpg",
+                           ["29_Nove_di_spade.jpg", "24_Quattro_di_spade.jpg", "17_Sette_di_coppe.jpg"])
