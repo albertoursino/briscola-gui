@@ -15,12 +15,16 @@ class BriscolaGui:
     table_frame = None
     deck_frame = None
     frame_padding = 5
+    card_label_padding = 5
 
     def __init__(self):
         self.root = Tk()
         self.root.minsize(900, 700)
         content_padding = (50, 50, 50, 50)  # w-n-e-s
-        self.content = ttk.Frame(self.root, padding=content_padding)
+        style = ttk.Style()
+        style.configure("Green.TFrame", background="green")
+        style.configure("Green.TButton", foreground="green", background="green", padding=-1)
+        self.content = ttk.Frame(self.root, padding=content_padding, style="Green.TFrame")
         self.content.grid(column=0, row=0, sticky="NSEW")
         # root and content resizing when resolution changes
         self.root.columnconfigure(0, weight=1)
@@ -44,7 +48,7 @@ class BriscolaGui:
         :return image filename of the played card
         """
         # creating and showing a label that represents the player played card into the table frame
-        new_card_btn = ttk.Label(self.table_frame.winfo_children()[1], image=card_btn['image'])
+        new_card_btn = ttk.Label(self.table_frame.winfo_children()[1], style="Green.TButton", image=card_btn['image'])
         new_card_btn.grid(column=0, row=0)
         # destroying the card object from the player frame
         card_btn.destroy()
@@ -58,7 +62,7 @@ class BriscolaGui:
         # remove a "retro card" from the agent frame
         self.agent_frame.winfo_children()[0].destroy()
         # showing the played card inside the table frame
-        card = ttk.Label(self.table_frame.winfo_children()[0], image=self.card_images[card_name])
+        card = ttk.Label(self.table_frame.winfo_children()[0], style="Green.TButton", image=self.card_images[card_name])
         card.grid(column=0, row=0)
 
     def empty_deck(self):
@@ -66,8 +70,8 @@ class BriscolaGui:
         This function loads the image "Deck_Finito.jpg" into the frame "deck_frame".
         """
         self.deck_frame.winfo_children()[1].destroy()
-        empty_deck_label = ttk.Label(self.deck_frame, image=self.card_images["Deck_Finito.jpg"])
-        empty_deck_label.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
+        empty_deck_label = ttk.Label(self.deck_frame, style="Green.TButton", image=self.card_images["Deck_Finito.jpg"])
+        empty_deck_label.grid(column=1, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
 
     def empty_briscola(self):
         """
@@ -80,9 +84,10 @@ class BriscolaGui:
         This function adds a card to the agent hand.
         """
         agent_frame_children = self.agent_frame.winfo_children()
-        card = ttk.Label(self.agent_frame, image=self.card_images["Carte_Napoletane_retro.jpg"])
+        card = ttk.Label(self.agent_frame, style="Green.TButton", image=self.card_images["Carte_Napoletane_retro.jpg"])
 
-        card.grid(column=len(agent_frame_children), row=0, sticky="NS", padx=5, pady=5)
+        card.grid(column=len(agent_frame_children), row=0, padx=self.card_label_padding,
+                  pady=self.card_label_padding)
 
     def player_draw_card(self, card_name):
         """
@@ -90,77 +95,72 @@ class BriscolaGui:
         :param card_name: image filename of the card to be added
         """
         player_frame_children = self.player_frame.winfo_children()
-        card = ttk.Button(self.player_frame, image=self.card_images[card_name],
+        card = ttk.Button(self.player_frame, style="Green.TButton", image=self.card_images[card_name],
                           command=lambda: self.player_play_card(card, card_name))
         # adding the card at the right most place in the player hand
-        card.grid(column=len(player_frame_children), row=0, sticky="NS", padx=5, pady=5)
+        card.grid(column=len(player_frame_children), row=0, padx=self.card_label_padding,
+                  pady=self.card_label_padding)
 
     def populate_player_frame(self, cards_name):
         """
         Inserts 3 cards into the frame "player_frame".
         :param cards_name: array containing 3 image filenames
         """
-        card_1 = ttk.Button(self.player_frame, command=lambda: self.player_play_card(card_1, cards_name[0]))
-        card_2 = ttk.Button(self.player_frame, command=lambda: self.player_play_card(card_2, cards_name[1]))
-        card_3 = ttk.Button(self.player_frame, command=lambda: self.player_play_card(card_3, cards_name[2]))
+        card_1 = ttk.Button(self.player_frame, style="Green.TButton", image=self.card_images[cards_name[0]],
+                            command=lambda: self.player_play_card(card_1, cards_name[0]))
+        card_2 = ttk.Button(self.player_frame, style="Green.TButton", image=self.card_images[cards_name[1]],
+                            command=lambda: self.player_play_card(card_2, cards_name[1]))
+        card_3 = ttk.Button(self.player_frame, style="Green.TButton", image=self.card_images[cards_name[2]],
+                            command=lambda: self.player_play_card(card_3, cards_name[2]))
 
-        card_1['image'] = self.card_images[cards_name[0]]
-        card_2['image'] = self.card_images[cards_name[1]]
-        card_3['image'] = self.card_images[cards_name[2]]
-
-        card_1.grid(column=0, row=0, sticky="NS", padx=5, pady=5)
-        card_2.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
-        card_3.grid(column=2, row=0, sticky="NS", padx=5, pady=5)
+        card_1.grid(column=0, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
+        card_2.grid(column=1, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
+        card_3.grid(column=2, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
 
     def populate_deck_frame(self, briscola_name):
         """
         Inserts images of the deck and of the briscola card into the frame "deck_frame".
         :param briscola_name: image filename of the briscola
         """
-        briscola_label = ttk.Label(self.deck_frame)
-        deck_label = ttk.Label(self.deck_frame)
+        briscola_label = ttk.Label(self.deck_frame, style="Green.TButton", image=self.card_images[briscola_name])
+        deck_label = ttk.Label(self.deck_frame, style="Green.TButton", image=self.card_images["Carte_Napoletane_retro.jpg"])
 
-        briscola_label['image'] = self.card_images[briscola_name]
-        deck_label['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
-
-        briscola_label.grid(column=0, row=0, sticky="NS", padx=5, pady=5)
-        deck_label.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
+        briscola_label.grid(column=0, row=0, sticky="NS", padx=self.card_label_padding, pady=self.card_label_padding)
+        deck_label.grid(column=1, row=0, sticky="NS", padx=self.card_label_padding, pady=self.card_label_padding)
 
     def create_main_frames(self):
         """
         Creates the 4 main frames.
         """
-        self.agent_frame = ttk.Frame(self.content, width=350, height=200)
-        self.player_frame = ttk.Frame(self.content, width=350, height=200)
-        self.table_frame = ttk.Frame(self.content, width=350, height=200)
-        self.deck_frame = ttk.Frame(self.content, width=200, height=200)
+        self.agent_frame = ttk.Frame(self.content, width=350, style="Green.TFrame")
+        self.player_frame = ttk.Frame(self.content, width=350, style="Green.TFrame")
+        self.table_frame = ttk.Frame(self.content, width=350, style="Green.TFrame")
+        self.deck_frame = ttk.Frame(self.content, width=200, style="Green.TFrame")
 
-        self.player_frame.grid(column=0, row=2, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
-        self.agent_frame.grid(column=0, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
-        self.table_frame.grid(column=0, row=1, sticky="NS", padx=self.frame_padding + 10, pady=self.frame_padding)
-        self.deck_frame.grid(column=1, row=1, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
+        self.player_frame.grid(column=0, row=2, sticky="NS")
+        self.agent_frame.grid(column=0, row=0, sticky="NS")
+        self.table_frame.grid(column=0, row=1, sticky="NS")
+        self.deck_frame.grid(column=1, row=1, sticky="NS")
 
         # --- inserting nested frames ---
         # here we are inside the frame "table_frame"
-        agent_card_frame = ttk.Frame(self.table_frame)
-        player_card_frame = ttk.Frame(self.table_frame)
-        agent_card_frame.grid(column=0, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
-        player_card_frame.grid(column=1, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
+        agent_played_card_frame = ttk.Frame(self.table_frame, style="Green.TFrame")
+        player_played_card_frame = ttk.Frame(self.table_frame, style="Green.TFrame")
+        agent_played_card_frame.grid(column=0, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
+        player_played_card_frame.grid(column=1, row=0, sticky="NS", padx=self.frame_padding, pady=self.frame_padding)
         # here we are inside the frame "agent_frame"
-        card_1 = ttk.Label(self.agent_frame)
-        card_2 = ttk.Label(self.agent_frame)
-        card_3 = ttk.Label(self.agent_frame)
-        card_1['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
-        card_2['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
-        card_3['image'] = self.card_images["Carte_Napoletane_retro.jpg"]
-        card_1.grid(column=0, row=0, sticky="NS", padx=5, pady=5)
-        card_2.grid(column=1, row=0, sticky="NS", padx=5, pady=5)
-        card_3.grid(column=2, row=0, sticky="NS", padx=5, pady=5)
+        card_1 = ttk.Label(self.agent_frame, style="Green.TButton", image=self.card_images["Carte_Napoletane_retro.jpg"])
+        card_2 = ttk.Label(self.agent_frame, style="Green.TButton", image=self.card_images["Carte_Napoletane_retro.jpg"])
+        card_3 = ttk.Label(self.agent_frame, style="Green.TButton", image=self.card_images["Carte_Napoletane_retro.jpg"])
+
+        card_1.grid(column=0, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
+        card_2.grid(column=1, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
+        card_3.grid(column=2, row=0, padx=self.card_label_padding, pady=self.card_label_padding)
 
         # resizing frames with resolution changes
         self.deck_frame.columnconfigure(0, weight=1)
         self.deck_frame.columnconfigure(1, weight=1)
-        self.deck_frame.rowconfigure(0, weight=1)
+        self.deck_frame.rowconfigure(0, weight=0)
         self.player_frame.columnconfigure(0, weight=1)
         self.player_frame.columnconfigure(1, weight=1)
         self.player_frame.columnconfigure(2, weight=1)
@@ -168,7 +168,7 @@ class BriscolaGui:
         self.agent_frame.columnconfigure(0, weight=1)
         self.agent_frame.columnconfigure(1, weight=1)
         self.agent_frame.columnconfigure(2, weight=1)
-        self.agent_frame.rowconfigure(0, weight=1)
+        self.agent_frame.rowconfigure(0, weight=0)
 
     def start_gui(self, briscola_name, initial_player_cards):
         """
